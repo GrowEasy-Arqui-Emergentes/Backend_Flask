@@ -12,7 +12,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dni = db.Column(db.String(20), unique=True, nullable=False)
@@ -43,76 +42,7 @@ def before_request():
 
 def preload_courses():
     courses = [
-        {
-            "name": "Fundamentos de Hidroponia",
-            "price": 50,
-            "description": "Curso introductorio sobre hidroponia.",
-            "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Catharanthus_roseus_white_CC-BY-SA.jpg/640px-Catharanthus_roseus_white_CC-BY-SA.jpg",
-            "videoUrl": "https://youtu.be/lr7iXNrvH1I?list=PLoP3Y_C2ydwtxTBGa_2BNav8dQeEsfjcl"
-        },
-        {
-            "name": "Hidroponia Avanzada",
-            "price": 60,
-            "description": "Curso avanzado de técnicas de hidroponia.",
-            "image": "https://algoritmomag.com/wp-content/uploads/2024/02/hidroponia-casera.jpg",
-            "videoUrl": "https://youtu.be/8zSjyk96ggM?list=PLXaMdWFW_yNNYS1RYYUVhlFLvKXHGVtNd"
-        },
-        {
-            "name": "Cultivo Hidropónico de Tomates",
-            "price": 40,
-            "description": "Cómo cultivar tomates usando hidroponia.",
-            "image": "https://humusnatural.com/wp-content/uploads/2023/04/Cultivo-tomate-hidroponico-pasos.jpg",
-            "videoUrl": "https://youtu.be/mTr7itgI12M"
-        },
-        {
-            "name": "Cultivo Hidropónico de Lechugas",
-            "price": 56,
-            "description": "Cómo cultivar lechugas usando hidroponia.",
-            "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRne2VTZ1J9g4KXPcsojsQjSCe_28CZkZDp2w&s",
-            "videoUrl": "https://youtu.be/rMaRj-pVcso"
-        },
-        {
-            "name": "Diseño de Sistemas Hidropónicos",
-            "price": 47,
-            "description": "Diseño y construcción de sistemas hidropónicos.",
-            "image": "https://i0.wp.com/ecoinventos.com/wp-content/uploads/2015/06/C%C3%B3mo-crear-un-sistema-hidrop%C3%B3nico-casero-6.jpg?resize=640%2C480&ssl=1",
-            "videoUrl": "https://youtu.be/d2sRLaiIh-Q"
-        },
-        {
-            "name": "Mantenimiento de Sistemas Hidropónicos",
-            "price": 76,
-            "description": "Cómo mantener y optimizar sistemas hidropónicos.",
-            "image": "https://i.ytimg.com/vi/QdeJRhI5TGQ/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCfK4cl5HvIbIZEN-35RV3lpsz7EA",
-            "videoUrl": "https://youtu.be/ncxImn3_nVI"
-        },
-        {
-            "name": "Nutrición de Plantas en Hidroponia",
-            "price": 80,
-            "description": "Gestión de nutrientes en cultivos hidropónicos.",
-            "image": "https://cdn.shopk.it/usercontent/grohoespana/media/images/2d2e11d-testes_laboratorio_hidroponia.jpg",
-            "videoUrl": "https://youtu.be/hpS_EYBTCeA"
-        },
-        {
-            "name": "Control de Plagas en Hidroponia",
-            "price": 40,
-            "description": "Métodos de control de plagas para cultivos hidropónicos.",
-            "image": "https://i.ytimg.com/vi/0HiN_2DDsZw/maxresdefault.jpg",
-            "videoUrl": "https://youtu.be/2QsF-cTSYw4"
-        },
-        {
-            "name": "Hidroponia Urbana",
-            "price": 60,
-            "description": "Implementación de hidroponia en espacios urbanos.",
-            "image": "https://diario.uach.cl/wp-content/uploads/2020/04/Agricultura-Hidrop%C3%B3nica.jpg",
-            "videoUrl": "https://youtu.be/geLAWZNthX8"
-        },
-        {
-            "name": "Hidroponia Comercial",
-            "price": 30,
-            "description": "Escalando hidroponia para producción comercial.",
-            "image": "https://i.ytimg.com/vi/F-BW5WR-kaE/maxresdefault.jpg?sqp=-oaymwEmCIAKENAF8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGDsgZSgYMA8=&rs=AOn4CLAY-1Ka_zYQY2gDRiFh7OTOAd0Sag",
-            "videoUrl": "https://youtu.be/F-BW5WR-kaE"
-        }
+        # tus cursos predeterminados aquí
     ]
 
     if Course.query.count() == 0:
@@ -307,6 +237,10 @@ def get_user_role():
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
     return jsonify({'role': user.role}), 200
+
+@app.route('/')
+def home():
+    return jsonify({'message': 'Bienvenido a la API de GreenGrow'})
 
 if __name__ == '__main__':
     app.run(debug=True)

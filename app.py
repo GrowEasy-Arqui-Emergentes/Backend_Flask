@@ -7,7 +7,7 @@ from email.mime.multipart import MIMEMultipart
 import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://greengrow_user:3YZmXh7C07rTm3RttPOCNSEsthr9lz7g@localhost:5432/greengrow')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://greengrow_user:3YZmXh7C07rTm3RttPOCNSEsthr9lz7g@dpg-cprija3v2p9s73a7nu10-a.oregon-postgres.render.com/greengrow')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

@@ -33,6 +33,16 @@ class Course(db.Model):
     image = db.Column(db.String(255), nullable=False)
     videoUrl = db.Column(db.String(255), nullable=False)
 
+class UserCourse(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    course_id = db.Column(db.Integer, nullable=False)
+
+class ShoppingCart(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    course_id = db.Column(db.Integer, nullable=False)
+
 @app.before_request
 def before_request():
     if not hasattr(app, 'db_initialized'):
@@ -216,6 +226,7 @@ def get_courses():
     courses_list = []
     for course in courses:
         courses_list.append({
+            'id': course.id,
             'name': course.name,
             'price': course.price,
             'description': course.description,
@@ -238,6 +249,126 @@ def get_user_role():
 
     return jsonify({'role': user.role}), 200
 
+@app.route('/users/<string:username>/courses', methods=['GET'])
+def get_user_courses(username):
+    # Buscar todos los registros de UserCourse para el usuario dado
+    user_courses = UserCourse.query.filter_by(username=username).all()
+
+    courses_list = []
+    for user_course in user_courses:
+        course = Course.query.get(user_course.course_id)
+        if course:
+            courses_list.append({
+                'id': course.id,
+                'name': course.name,
+                'price': course.price,
+                'description': course.description,
+                'image': course.image,
+                'videoUrl': course.videoUrl
+            })
+
+    return jsonify(courses_list), 200
+
+
+@app.route('/shopping_cart', methods=['POST'])
+def add_to_shopping_cart():
+    data = request.get_json()
+    username = data.get('username')
+    course_id = data.get('course_id')
+
+    if not username or not course_id:
+        return jsonify({'error': 'Nombre de usuario y ID de curso son requeridos'}), 400
+
+    # Verificar si el usuario y el curso existen
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    course = Course.query.get(course_id)
+    if not course:
+        return jsonify({'error': 'Curso no encontrado'}), 404
+
+    # Agregar al carrito de compras
+    new_item = ShoppingCart(username=username, course_id=course_id)
+    db.session.add(new_item)
+    db.session.commit()
+
+    return jsonify({'message': 'Curso añadido al carrito de compras correctamente'}), 201
+
+@app.route('/shopping_cart', methods=['DELETE'])
+def remove_from_shopping_cart():
+    data = request.get_json()
+    username = data.get('username')
+    course_id = data.get('course_id')
+
+    if not username or not course_id:
+        return jsonify({'error': 'Nombre de usuario y ID de curso son requeridos'}), 400
+
+    # Verificar y eliminar del carrito de compras
+    item = ShoppingCart.query.filter_by(username=username, course_id=course_id).first()
+    if not item:
+        return jsonify({'error': 'No se encontró la combinación de usuario y curso en el carrito de compras'}), 404
+
+    db.session.delete(item)
+    db.session.commit()
+
+    return jsonify({'message': 'Curso eliminado del carrito de compras correctamente'}), 200
+
+@app.route('/process_shopping_cart', methods=['POST'])
+def process_shopping_cart():
+    data = request.get_json()
+    username = data.get('username')
+
+    if not username:
+        return jsonify({'error': 'Nombre de usuario es requerido'}), 400
+
+    # Obtener todos los elementos del carrito de compras para el usuario dado
+    items = ShoppingCart.query.filter_by(username=username).all()
+
+    if not items:
+        return jsonify({'message': 'El carrito de compras está vacío'}), 200
+
+    try:
+        # Agregar los cursos al usuario y limpiar el carrito de compras
+        for item in items:
+            new_user_course = UserCourse(username=username, course_id=item.course_id)
+            db.session.add(new_user_course)
+            db.session.delete(item)
+
+        db.session.commit()
+        return jsonify({'message': 'Cursos agregados al usuario y carrito de compras limpiado correctamente'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error al procesar el carrito de compras: {str(e)}'}), 500
+    
+@app.route('/shopping_cart/<username>', methods=['GET'])
+def get_courses_in_shopping_cart(username):
+    if not username:
+        return jsonify({'error': 'Username es requerido'}), 400
+
+    # Obtener los cursos en el carrito de compras del usuario
+    cart_items = ShoppingCart.query.filter_by(username=username).all()
+
+    if not cart_items:
+        return jsonify({'message': 'El carrito de compras está vacío para este usuario'}), 200
+
+    # Obtener los detalles de cada curso en el carrito de compras
+    courses_in_cart = []
+    for item in cart_items:
+        course = Course.query.get(item.course_id)
+        if course:
+            courses_in_cart.append({
+                'id': course.id,
+                'name': course.name,
+                'price': course.price,
+                'description': course.description,
+                'image': course.image,
+                'videoUrl': course.videoUrl
+            })
+
+    return jsonify(courses_in_cart), 200
+    
 @app.route('/')
 def home():
     return jsonify({'message': 'Bienvenido a la API de GreenGrow'})
